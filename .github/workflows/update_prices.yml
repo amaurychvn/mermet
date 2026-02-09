@@ -28,15 +28,17 @@ jobs:
       - name: Run scraping script
         run: python petrole.py
 
-      - name: Commit and push changes
+      - name: Commit and push if changes
         run: |
           git config --global user.name 'GitHub Actions Bot'
           git config --global user.email 'actions@github.com'
-          # Vérifie s'il y a des modifs avant de commit pour éviter une erreur
+          
+          # Vérifie s'il y a des changements
           if [[ -n $(git status -s) ]]; then
             git add prix_carburants_quotidien.csv
-            git commit -m "Auto-update: Prix carburants du jour"
+            git commit -m "Auto-update: Données de 17h"
             git push
+            echo "✅ Mise à jour effectuée et sauvegardée."
           else
-            print("Aucun changement détecté aujourd'hui.")
+            echo "⚠️ Aucun changement détecté (peut-être pas de nouvelles données)."
           fi
