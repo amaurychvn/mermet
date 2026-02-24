@@ -1,5 +1,7 @@
 import pandas as pd
 import yfinance as yf
+import requests
+from io import StringIO
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
@@ -8,20 +10,27 @@ import matplotlib.pyplot as plt
 # ==========================================
 # 1. CHARGEMENT ET FILTRAGE DES DONNÉES
 # ==========================================
-url_github = "https://raw.githubusercontent.com/amaurychvn/petrole-bot/refs/heads/main/prix_carburants_quotidien.csv?token=GHSAT0AAAAAADVEPTSYR4QFCPKENZTLLC4M2M546NA"
 
-# Lecture du fichier
-df_carburants = pd.read_csv(url_github)
+# L'URL "Raw" pure de votre fichier (SANS le ?token=... à la fin)
+url_github = "https://raw.githubusercontent.com/amaurychvn/petrole-bot/refs/heads/main/prix_carburants_quotidien.csv"
 
-# On filtre pour ne garder que les lignes concernant les camions (Gazole)
+# Collez votre vrai token généré à l'étape 6 ici
+mon_token = "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"
+
+# Autorisation et lecture
+headers = {'Authorization': f'token {mon_token}'}
+reponse = requests.get(url_github, headers=headers)
+
+# Création du tableau de données complet
+df_carburants = pd.read_csv(StringIO(reponse.text))
+
+# Filtrage pour ne garder que le Gazole
 df_gazole = df_carburants[df_carburants['Carburant'] == 'Gazole'].copy()
-
-# On convertit la colonne 'Date' au bon format et on la met en index
 df_gazole['Date'] = pd.to_datetime(df_gazole['Date'])
 df_gazole.set_index('Date', inplace=True)
-
-# On ne garde plus que la colonne 'Prix' qui nous intéresse
 df_gazole = df_gazole[['Prix']]
+
+print("Fichier chargé et filtré avec succès !")
 
 # ==========================================
 # 2. RÉCUPÉRATION DU BRENT ET EUR/USD
