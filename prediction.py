@@ -86,3 +86,25 @@ print(f"Score R2 : {r2_score(y_test, predictions):.4f}")
 # Petit bonus : regarder le poids des variables pour voir ce qui influence le plus
 for feature, coef in zip(X.columns, modele.coef_):
     print(f"Impact de {feature} : {coef:.5f}")
+
+# ==========================================
+# 6. VISUALISATION GRAPHIQUE
+# ==========================================
+# On configure la taille du graphique
+plt.figure(figsize=(12, 6))
+
+# On trace la courbe des vrais prix (en bleu)
+plt.plot(y_test.index, y_test.values, label="Prix Réel du Gazole", color="blue")
+
+# On trace la courbe des prédictions (en rouge pointillé)
+plt.plot(y_test.index, predictions, label="Prédictions du Modèle", color="red", linestyle="--")
+
+# On ajoute un titre et des légendes
+plt.title("Prédiction du prix du Gazole : Réalité vs Modèle")
+plt.xlabel("Date")
+plt.ylabel("Prix (€ / Litre)")
+plt.legend()
+plt.grid(True)
+
+# On affiche le graphique
+plt.show()
