@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 # ==========================================
 # 1. CHARGEMENT ET FILTRAGE DES DONNÉES
 # ==========================================
-url_github = "URL_DE_VOTRE_FICHIER_GITHUB_RAW.csv"
+url_github = "https://raw.githubusercontent.com/amaurychvn/petrole-bot/refs/heads/main/prix_carburants_quotidien.csv?token=GHSAT0AAAAAADVEPTSYR4QFCPKENZTLLC4M2M546NA"
 
 # Lecture du fichier
 df_carburants = pd.read_csv(url_github)
