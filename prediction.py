@@ -36,43 +36,53 @@ print("Fichier chargé et filtré avec succès !")
 # 2. RÉCUPÉRATION DU BRENT ET EUR/USD
 # ==========================================
 tickers = ["BZ=F", "EURUSD=X"]
-
-# On cale les dates sur celles de votre fichier (ex: 2024-01-01 à aujourd'hui)
 start_date = df_gazole.index.min().strftime('%Y-%m-%d')
 end_date = df_gazole.index.max().strftime('%Y-%m-%d')
 
-print(f"Téléchargement des données financières du {start_date} au {end_date}...")
-# On télécharge les prix de clôture ('Close')
 donnees_finance = yf.download(tickers, start=start_date, end=end_date)['Close']
 donnees_finance.rename(columns={'BZ=F': 'Brent', 'EURUSD=X': 'EUR_USD'}, inplace=True)
+
+# GESTION DES WEEK-ENDS : on ré-indexe pour avoir tous les jours de l'année
+# et on remplit les jours sans bourse (week-ends) avec le prix du vendredi (ffill)
+donnees_finance = donnees_finance.asfreq('D').ffill()
+
+# Calculer le prix du baril en Euros (car nous payons en Euros à la pompe)
+donnees_finance['Brent_Euros'] = donnees_finance['Brent'] / donnees_finance['EUR_USD']
+
+# AJOUT DES DÉCALAGES TEMPELS (Lags) 
+# Le prix à la pompe dépend du prix du brut d'il y a 1, 2 ou 3 semaines.
+donnees_finance['Brent_Eur_J_moins_7'] = donnees_finance['Brent_Euros'].shift(7)
+donnees_finance['Brent_Eur_J_moins_14'] = donnees_finance['Brent_Euros'].shift(14)
+donnees_finance['Brent_Eur_J_moins_21'] = donnees_finance['Brent_Euros'].shift(21)
 
 # ==========================================
 # 3. FUSION DES DONNÉES
 # ==========================================
-# On fusionne le prix du Gazole avec le Brent et l'EUR/USD selon la date
+# On fusionne. Les premières lignes auront des NaN à cause du "shift", on les supprime.
 df_merged = df_gazole.join(donnees_finance, how='inner').dropna()
 
-print(f"Nombre de jours exploitables après fusion : {len(df_merged)}")
-
 # ==========================================
-# 4. MODÈLE DE PRÉDICTION (Machine Learning)
+# 4. MODÈLE DE PRÉDICTION
 # ==========================================
-# Les variables qui expliquent le prix (Features)
-X = df_merged[['Brent', 'EUR_USD']]
-# Ce que l'on cherche à prédire (Target)
+# On utilise maintenant les prix passés pour prédire le prix actuel
+X = df_merged[['Brent_Euros', 'Brent_Eur_J_moins_7', 'Brent_Eur_J_moins_14', 'Brent_Eur_J_moins_21']]
 y = df_merged['Prix']
 
-# Séparation : 80% pour entraîner la machine, 20% pour vérifier si elle a compris
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# SÉPARATION CHRONOLOGIQUE (Important : shuffle=False)
+# On s'entraîne sur le passé, on teste sur l'avenir (les 20 derniers % des dates)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
 
-# Entraînement
 modele = LinearRegression()
 modele.fit(X_train, y_train)
 
 # ==========================================
-# 5. ÉVALUATION ET VISUALISATION
+# 5. ÉVALUATION
 # ==========================================
 predictions = modele.predict(X_test)
 
 print(f"Erreur quadratique moyenne (MSE) : {mean_squared_error(y_test, predictions):.4f}")
-print(f"Score R
+print(f"Score R2 : {r2_score(y_test, predictions):.4f}")
+
+# Petit bonus : regarder le poids des variables pour voir ce qui influence le plus
+for feature, coef in zip(X.columns, modele.coef_):
+    print(f"Impact de {feature} : {coef:.5f}")
