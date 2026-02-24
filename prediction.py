@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import yfinance as yf
 import requests
@@ -14,8 +15,7 @@ import matplotlib.pyplot as plt
 # L'URL "Raw" pure de votre fichier (SANS le ?token=... à la fin)
 url_github = "https://raw.githubusercontent.com/amaurychvn/petrole-bot/refs/heads/main/prix_carburants_quotidien.csv"
 
-# Collez votre vrai token généré à l'étape 6 ici
-mon_token = "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"
+mon_token = os.environ.get("MON_TOKEN_GITHUB")
 
 # Autorisation et lecture
 headers = {'Authorization': f'token {mon_token}'}
@@ -107,4 +107,4 @@ plt.legend()
 plt.grid(True)
 
 # On affiche le graphique
-plt.show()
+plt.savefig('prediction_gazole.png')
