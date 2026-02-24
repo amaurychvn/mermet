@@ -1,0 +1,32 @@
+name: Lancer la prédiction
+
+# Ceci permet de lancer le script manuellement en cliquant sur un bouton
+on:
+  workflow_dispatch:
+
+jobs:
+  execution:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. GitHub récupère les fichiers de ton dépôt
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      # 2. GitHub installe Python
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # 3. GitHub installe Pandas, Scikit-learn, etc.
+      - name: Installer les bibliothèques
+        run: |
+          pip install pandas yfinance requests scikit-learn matplotlib
+
+      # 4. GitHub lance ton script Python
+      - name: Lancer la prédiction
+        env:
+          # On transmet le secret au script Python
+          MON_TOKEN_GITHUB: ${{ secrets.MON_TOKEN_GITHUB }}
+        run: python prediction.py
