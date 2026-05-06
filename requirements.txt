@@ -1,3 +1,6 @@
-requests
 pandas
-yfinance
+numpy
+scikit-learn
+statsmodels
+xgboost
+plotly
