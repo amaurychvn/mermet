@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install -r requirements_predict.txt
+      - run: pip install -r requirements.txt
       - run: python predict_pump.py
       - name: Commit et push si changements
         run: |
