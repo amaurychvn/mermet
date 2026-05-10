@@ -946,12 +946,27 @@ def generate_html(df, forecast_df, metrics, market, model_name, mape_results):
 
 
 def save_predictions_csv(forecast_df):
+    """
+    Écrit deux fichiers :
+      - predictions.csv : les 14 prévisions du jour (écrasé à chaque run)
+      - predictions/predictions_AAAA-MM-JJ.csv : archive horodatée
+    """
     out = forecast_df.reset_index()[["Date", "Prix_predit", "IC_bas", "IC_haut"]].copy()
     out["Date"] = out["Date"].dt.strftime("%Y-%m-%d")
     for c in ("Prix_predit", "IC_bas", "IC_haut"):
         out[c] = out[c].round(4)
+
+    # 1. Le fichier "courant" (toujours à la racine, écrasé)
     out.to_csv(PATH_PREDICTIONS_CSV, index=False)
     log.info(f"  -> {PATH_PREDICTIONS_CSV}")
+
+    # 2. L'archive horodatée (jamais écrasée)
+    archive_dir = Path("predictions")
+    archive_dir.mkdir(exist_ok=True)
+    today = datetime.now(TZ_PARIS).strftime("%Y-%m-%d")
+    archive_path = archive_dir / f"predictions_{today}.csv"
+    out.to_csv(archive_path, index=False)
+    log.info(f"  -> {archive_path}")
 
 
 # =============================================================================
