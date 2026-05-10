@@ -21,7 +21,7 @@ jobs:
           git config --global user.email 'actions@github.com'
           git pull --rebase --autostash
           if [[ -n $(git status -s) ]]; then
-            git add index.html predictions.csv
+            git add index.html predictions.csv predictions/
             git commit -m "Auto-update: prédictions du jour"
             git push
             echo "Prédictions mises à jour."
